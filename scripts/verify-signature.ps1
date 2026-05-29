@@ -1,9 +1,5 @@
 param(
-    [string]$FilePath = 'dist\BluePulse.exe',
-    [string]$CertificateBase64 = $env:WINDOWS_SIGNING_CERTIFICATE_BASE64,
-    [string]$CertificatePassword = $env:WINDOWS_SIGNING_CERTIFICATE_PASSWORD,
-    [string]$TimestampServer = 'http://timestamp.digicert.com',
-    [switch]$Optional
+    [string]$FilePath = 'dist\BluePulse.exe'
 )
 
 Set-StrictMode -Version Latest
@@ -17,16 +13,6 @@ $target = if ([System.IO.Path]::IsPathRooted($FilePath)) { $FilePath } else { Jo
 if (-not (Test-Path $target)) {
     Write-Error "Executable not found: $target"
     exit 1
-}
-
-if (-not $CertificateBase64 -or -not $CertificatePassword) {
-    if ($Optional) {
-        Write-Host 'Signing skipped because certificate secrets are not configured.'
-        exit 0
-    }
-
-    Write-Error 'Set WINDOWS_SIGNING_CERTIFICATE_BASE64 and WINDOWS_SIGNING_CERTIFICATE_PASSWORD to sign the executable.'
-    exit 2
 }
 
 function Resolve-SignTool {
@@ -58,15 +44,4 @@ if (-not $signTool) {
     exit 2
 }
 
-$certificatePath = Join-Path ([System.IO.Path]::GetTempPath()) 'bluepulse-signing-cert.pfx'
-
-try {
-    [System.IO.File]::WriteAllBytes($certificatePath, [System.Convert]::FromBase64String($CertificateBase64))
-
-    & $signTool sign /fd SHA256 /f $certificatePath /p $CertificatePassword /tr $TimestampServer /td SHA256 $target
-    & $signTool verify /pa /v $target
-} finally {
-    if (Test-Path $certificatePath) {
-        Remove-Item -LiteralPath $certificatePath -Force -ErrorAction SilentlyContinue
-    }
-}
+& $signTool verify /pa /v $target

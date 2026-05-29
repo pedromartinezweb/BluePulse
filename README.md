@@ -31,20 +31,23 @@ The generated executable is written to `dist\BluePulse.exe`.
 
 The executable includes product metadata in `assets\windows\BluePulse.rc`.
 
-GitHub Actions builds the Windows executable on `windows-latest`. Releases from `main` require a valid Authenticode certificate and fail if signing is not configured. This avoids publishing unsigned release binaries.
+GitHub Actions builds the Windows executable on `windows-latest`. Public release builds are prepared for SignPath Foundation code signing.
 
-Add these repository secrets before publishing a release:
+When SignPath approves the project, configure these GitHub repository variables:
 
-- `WINDOWS_SIGNING_CERTIFICATE_BASE64`: Base64-encoded `.pfx` certificate contents.
-- `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`: certificate password.
+- `SIGNPATH_ORGANIZATION_ID`
+- `SIGNPATH_PROJECT_SLUG`
+- `SIGNPATH_SIGNING_POLICY_SLUG`
 
-Generate the Base64 value on Windows:
+Configure this GitHub repository secret:
 
-```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes('certificate.pfx')) | Set-Clipboard
-```
+- `SIGNPATH_API_TOKEN`
 
-A real code-signing certificate is required to improve trust with Windows SmartScreen and antivirus vendors. Metadata alone is not a digital signature, and a self-signed certificate does not establish publisher reputation for public downloads.
+The workflow always uploads the unsigned executable as a short-lived workflow artifact. When SignPath is configured, it submits that artifact for signing, waits for the signed executable, verifies the Authenticode signature, and publishes the signed file to GitHub Releases.
+
+If SignPath is not configured yet, releases are not published. This avoids distributing unsigned release binaries.
+
+See `docs/SIGNPATH.md` for the full setup checklist.
 
 ## Clean
 

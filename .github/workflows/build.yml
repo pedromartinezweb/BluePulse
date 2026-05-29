@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
 
 jobs:
@@ -36,24 +37,69 @@ jobs:
         shell: pwsh
         run: .\build.ps1
 
-      - name: Sign release executable
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Check SignPath configuration
+        id: signpath
         shell: pwsh
         env:
-          WINDOWS_SIGNING_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_BASE64 }}
-          WINDOWS_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_PASSWORD }}
-        run: .\scripts\sign.ps1
+          SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          SIGNPATH_SIGNING_POLICY_SLUG: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+        run: |
+          $configured = -not [string]::IsNullOrWhiteSpace($env:SIGNPATH_ORGANIZATION_ID) `
+            -and -not [string]::IsNullOrWhiteSpace($env:SIGNPATH_PROJECT_SLUG) `
+            -and -not [string]::IsNullOrWhiteSpace($env:SIGNPATH_SIGNING_POLICY_SLUG) `
+            -and -not [string]::IsNullOrWhiteSpace($env:SIGNPATH_API_TOKEN)
 
-      - name: Sign non-release executable if configured
-        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+          "configured=$($configured.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+          if ($configured) {
+            Write-Host 'SignPath is configured. Release builds will be signed before publishing.'
+          } else {
+            Write-Host 'SignPath is not configured yet. The unsigned executable will be uploaded as a workflow artifact only.'
+          }
+
+      - name: Upload unsigned executable for SignPath
+        id: upload-unsigned-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BluePulse-unsigned
+          path: dist/BluePulse.exe
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Submit SignPath signing request
+        if: steps.signpath.outputs.configured == 'true'
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-id: ${{ steps.upload-unsigned-artifact.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 1800
+          output-artifact-directory: signed
+
+      - name: Replace output with signed executable
+        if: steps.signpath.outputs.configured == 'true'
         shell: pwsh
-        env:
-          WINDOWS_SIGNING_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_BASE64 }}
-          WINDOWS_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_PASSWORD }}
-        run: .\scripts\sign.ps1 -Optional
+        run: |
+          $signed = Get-ChildItem -Path signed -Recurse -Filter BluePulse.exe -File | Select-Object -First 1
+          if (-not $signed) {
+            Write-Error 'Signed BluePulse.exe was not found in the SignPath output.'
+            exit 1
+          }
 
-      - name: Publish GitHub release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+          Copy-Item -LiteralPath $signed.FullName -Destination dist\BluePulse.exe -Force
+
+      - name: Verify signed executable
+        if: steps.signpath.outputs.configured == 'true'
+        shell: pwsh
+        run: .\scripts\verify-signature.ps1
+
+      - name: Publish signed GitHub release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.signpath.outputs.configured == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: main-${{ github.run_number }}-${{ github.run_attempt }}
@@ -62,10 +108,10 @@ jobs:
           generate_release_notes: true
           files: dist/BluePulse.exe
 
-      - name: Upload executable artifact
-        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+      - name: Upload signed executable artifact
+        if: steps.signpath.outputs.configured == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: BluePulse-windows-x64
+          name: BluePulse-windows-x64-signed
           path: dist/BluePulse.exe
           if-no-files-found: error
