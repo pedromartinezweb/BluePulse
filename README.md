@@ -1,18 +1,47 @@
 # BluePulse
 
-[Download BluePulse.exe from the latest release](https://github.com/pedromartinezweb/BluePulse/releases/latest/download/BluePulse.exe)
+**Keep your Windows PC awake without admin permissions.**
 
-BluePulse is a Windows application that helps keep the current session active and prevents the screen from going idle because of inactivity.
+[Download from releases](https://github.com/pedromartinezweb/BluePulse/releases) · [Source code](src/BluePulse/BluePulse.c) · [MIT License](LICENSE)
+
+BluePulse is a small native Windows utility that helps keep the current session active and prevents the screen from going idle during inactivity.
+
+It is built for a narrow purpose: keep the display awake while you are working around idle timeouts, without installing services, changing system policies, or simulating user input.
+
+## Quick start
+
+1. Download `BluePulse.exe` from the latest signed release.
+2. Run the executable.
+3. Enable the utility.
+4. Choose the idle threshold in minutes.
+5. Minimize it to the system tray when you want it out of the way.
+
+No installer is required.
+
+## Safety and transparency
+
+BluePulse is intentionally simple:
+
+- No administrator permissions.
+- No background service installation.
+- No keyboard or mouse input simulation.
+- No network access.
+- No analytics or user data collection.
+- No corporate policy bypass.
+
+If a company policy forces idle locking, BluePulse does not modify or disable that policy.
+
+## Code signing
 
 BluePulse uses the SignPath Foundation for code signing of public release builds.
 
-## What it does
+The GitHub Actions workflow builds the executable on a GitHub-hosted Windows runner, submits the build artifact to SignPath when signing is configured, verifies the Authenticode signature, and publishes only the signed executable to GitHub Releases.
 
-BluePulse is designed to keep a Windows PC active during idle periods without administrator permissions.
+Until SignPath approval is complete, the workflow does not publish new unsigned release binaries.
 
-It does not simulate user input, bypass corporate lock policies, install services, change system policies, or run hidden background behavior. It uses standard Windows power availability APIs from a small native executable.
+Setup details are documented in [docs/SIGNPATH.md](docs/SIGNPATH.md).
 
-## Build
+## Build from source
 
 Requirements:
 
@@ -25,33 +54,13 @@ Build from PowerShell:
 .\build.ps1
 ```
 
-The generated executable is written to `dist\BluePulse.exe`.
+The generated executable is written to:
 
-## Windows signing
+```text
+dist\BluePulse.exe
+```
 
-The executable includes product metadata in `assets\windows\BluePulse.rc`.
-
-GitHub Actions builds the Windows executable on `windows-latest`. Public release builds are prepared for SignPath Foundation code signing.
-
-When SignPath approves the project, configure these GitHub repository variables:
-
-- `SIGNPATH_ORGANIZATION_ID`
-- `SIGNPATH_PROJECT_SLUG`
-- `SIGNPATH_SIGNING_POLICY_SLUG`
-
-Configure this GitHub repository secret:
-
-- `SIGNPATH_API_TOKEN`
-
-The workflow always uploads the unsigned executable as a short-lived workflow artifact. When SignPath is configured, it submits that artifact for signing, waits for the signed executable, verifies the Authenticode signature, and publishes the signed file to GitHub Releases.
-
-If SignPath is not configured yet, releases are not published. This avoids distributing unsigned release binaries.
-
-See `docs/SIGNPATH.md` for the full setup checklist.
-
-## Clean
-
-Remove generated build artifacts:
+Clean generated artifacts:
 
 ```powershell
 .\build.ps1 -Clean
@@ -63,7 +72,10 @@ Run a deeper cleanup:
 .\build.ps1 -Clean -Deep
 ```
 
+## Project status
+
+BluePulse is early-stage open source software. The source code, build workflow, Windows resource metadata, and release process are public for review.
+
 ## License
 
-BluePulse is open source software distributed under the MIT License.
-See `LICENSE` for the full text.
+BluePulse is open source software distributed under the [MIT License](LICENSE).
