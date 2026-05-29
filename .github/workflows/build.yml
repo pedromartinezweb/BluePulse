@@ -36,7 +36,16 @@ jobs:
         shell: pwsh
         run: .\build.ps1
 
-      - name: Sign BluePulse
+      - name: Sign release executable
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          WINDOWS_SIGNING_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_BASE64 }}
+          WINDOWS_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_PASSWORD }}
+        run: .\scripts\sign.ps1
+
+      - name: Sign non-release executable if configured
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
         shell: pwsh
         env:
           WINDOWS_SIGNING_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_BASE64 }}

@@ -8,9 +8,9 @@
 #include <wchar.h>
 
 #define APP_NAME L"BluePulse"
-#define APP_TAGLINE L"Mant\x00E9n viva tu VM con un pulso azul"
-#define APP_MUTEX_NAME L"WinIdleKeeper.SingleInstance"
-#define APP_SETTINGS_FOLDER L"WinIdleKeeper"
+#define APP_TAGLINE L"Keep your Windows PC awake with a blue pulse"
+#define APP_MUTEX_NAME L"BluePulse.SingleInstance"
+#define APP_SETTINGS_FOLDER L"BluePulse"
 #define IDI_APP_ICON 101
 
 #define WINDOW_WIDTH 720
@@ -87,7 +87,7 @@ static AppSettings g_settings = { FALSE, 4, TRUE };
 static BOOL g_isExiting = FALSE;
 static BOOL g_isUpdatingIdleInput = FALSE;
 static ULONGLONG g_lastRenewTick = 0;
-static wchar_t g_lastActionText[160] = L"Sin acciones";
+static wchar_t g_lastActionText[160] = L"No actions yet";
 
 static HFONT CreateUiFont(int pointSize, int weight)
 {
@@ -327,7 +327,7 @@ static void RecordLastAction(const wchar_t *prefix)
     swprintf(
         g_lastActionText,
         sizeof(g_lastActionText) / sizeof(g_lastActionText[0]),
-        L"%ls a las %02u:%02u:%02u",
+        L"%ls at %02u:%02u:%02u",
         prefix,
         localTime.wHour,
         localTime.wMinute,
@@ -340,10 +340,10 @@ static void UpdateTrayPresentation(void)
     wchar_t tip[128];
 
     if (g_trayMenu != NULL) {
-        ModifyMenuW(g_trayMenu, ID_TRAY_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_TRAY_TOGGLE, g_settings.enabled ? L"Deshabilitar" : L"Habilitar");
+        ModifyMenuW(g_trayMenu, ID_TRAY_TOGGLE, MF_BYCOMMAND | MF_STRING, ID_TRAY_TOGGLE, g_settings.enabled ? L"Disable" : L"Enable");
     }
 
-    swprintf(tip, sizeof(tip) / sizeof(tip[0]), L"%ls - %ls", APP_NAME, g_settings.enabled ? L"Activado" : L"Desactivado");
+    swprintf(tip, sizeof(tip) / sizeof(tip[0]), L"%ls - %ls", APP_NAME, g_settings.enabled ? L"Enabled" : L"Disabled");
 
     ZeroMemory(&g_trayIconData, sizeof(g_trayIconData));
     g_trayIconData.cbSize = sizeof(g_trayIconData);
@@ -358,7 +358,7 @@ static void UpdateTrayPresentation(void)
 
 static void UpdateStatusPresentation(void)
 {
-    SetWindowTextW(g_stateValue, g_settings.enabled ? L"Activado" : L"Desactivado");
+    SetWindowTextW(g_stateValue, g_settings.enabled ? L"Enabled" : L"Disabled");
     SetWindowTextW(g_lastActionValue, g_lastActionText);
     InvalidateRect(g_stateValue, NULL, TRUE);
     UpdateTrayPresentation();
@@ -387,7 +387,7 @@ static void UpdateIdleLabel(void)
         if (idleMilliseconds >= thresholdMilliseconds && now - g_lastRenewTick >= 60000ULL) {
             if (EnableKeepAwake()) {
                 g_lastRenewTick = now;
-                RecordLastAction(L"Pantalla mantenida activa");
+                RecordLastAction(L"Screen kept awake");
             }
         }
     }
@@ -397,7 +397,7 @@ static void SetEnabledState(BOOL enabled, BOOL persist)
 {
     if (enabled) {
         if (!EnableKeepAwake()) {
-            MessageBoxW(g_mainWindow, L"No se pudo activar el mantenimiento de pantalla activa.", APP_NAME, MB_OK | MB_ICONWARNING);
+            MessageBoxW(g_mainWindow, L"Unable to enable screen keep-alive mode.", APP_NAME, MB_OK | MB_ICONWARNING);
             enabled = FALSE;
         }
     } else {
@@ -425,7 +425,7 @@ static void HideToTray(void)
     balloon.uID = 1;
     balloon.uFlags = NIF_INFO;
     wcsncpy(balloon.szInfoTitle, APP_NAME, (sizeof(balloon.szInfoTitle) / sizeof(balloon.szInfoTitle[0])) - 1);
-    wcsncpy(balloon.szInfo, L"La aplicacion sigue disponible desde la bandeja del sistema.", (sizeof(balloon.szInfo) / sizeof(balloon.szInfo[0])) - 1);
+    wcsncpy(balloon.szInfo, L"The application is still available from the system tray.", (sizeof(balloon.szInfo) / sizeof(balloon.szInfo[0])) - 1);
     balloon.dwInfoFlags = NIIF_INFO;
     Shell_NotifyIconW(NIM_MODIFY, &balloon);
 }
@@ -507,10 +507,10 @@ static void CreateControls(HWND hwnd)
     int i;
     static const wchar_t *leftTexts[5] = {
         L"Control",
-        L"Umbral de inactividad",
-        L"Estado",
-        L"Inactividad actual",
-        L"Ultima accion"
+        L"Idle threshold",
+        L"Status",
+        L"Current idle time",
+        L"Last action"
     };
     static const int leftIds[5] = {
         ID_LABEL_CONTROL,
@@ -522,27 +522,27 @@ static void CreateControls(HWND hwnd)
 
     CreateUiResources();
 
-    g_detailLabel = CreateWindowExW(0, L"STATIC", L"Mantiene la pantalla activa sin permisos de administrador.\r\nNo simula entrada de usuario ni evita politicas corporativas de bloqueo.", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_DETAIL_LABEL, g_instance, NULL);
+    g_detailLabel = CreateWindowExW(0, L"STATIC", L"Keeps the screen awake without administrator permissions.\r\nDoes not simulate user input or bypass corporate lock policies.", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_DETAIL_LABEL, g_instance, NULL);
 
     for (i = 0; i < 5; i++) {
         g_leftLabels[i] = CreateWindowExW(0, L"STATIC", leftTexts[i], WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)(INT_PTR)leftIds[i], g_instance, NULL);
     }
 
-    g_enabledCheck = CreateWindowExW(0, L"BUTTON", L"Habilitar utilidad", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 0, 0, 0, 0, hwnd, (HMENU)ID_ENABLE_CHECK, g_instance, NULL);
+    g_enabledCheck = CreateWindowExW(0, L"BUTTON", L"Enable utility", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 0, 0, 0, 0, hwnd, (HMENU)ID_ENABLE_CHECK, g_instance, NULL);
     g_idleEdit = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_AUTOHSCROLL, 0, 0, 0, 0, hwnd, (HMENU)ID_IDLE_EDIT, g_instance, NULL);
     g_idleSpin = CreateWindowExW(0, UPDOWN_CLASSW, NULL, WS_CHILD | WS_VISIBLE | UDS_ALIGNRIGHT | UDS_SETBUDDYINT | UDS_ARROWKEYS, 0, 0, 0, 0, hwnd, (HMENU)ID_IDLE_SPIN, g_instance, NULL);
     SendMessageW(g_idleSpin, UDM_SETRANGE32, 1, 60);
     SendMessageW(g_idleSpin, UDM_SETBUDDY, (WPARAM)g_idleEdit, 0);
     g_idleUnitLabel = CreateWindowExW(0, L"STATIC", L"min", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_IDLE_UNIT, g_instance, NULL);
 
-    g_stateValue = CreateWindowExW(0, L"STATIC", L"Desactivado", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_STATE_VALUE, g_instance, NULL);
+    g_stateValue = CreateWindowExW(0, L"STATIC", L"Disabled", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_STATE_VALUE, g_instance, NULL);
     g_idleValue = CreateWindowExW(0, L"STATIC", L"00:00", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_IDLE_VALUE, g_instance, NULL);
-    g_lastActionValue = CreateWindowExW(0, L"STATIC", L"Sin acciones", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_LAST_ACTION_VALUE, g_instance, NULL);
+    g_lastActionValue = CreateWindowExW(0, L"STATIC", L"No actions yet", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_LAST_ACTION_VALUE, g_instance, NULL);
 
-    g_minimizeButton = CreateWindowExW(0, L"BUTTON", L"Minimizar a bandeja", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 0, 0, 0, hwnd, (HMENU)ID_MINIMIZE_BUTTON, g_instance, NULL);
-    g_exitButton = CreateWindowExW(0, L"BUTTON", L"Salir", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 0, 0, 0, hwnd, (HMENU)ID_EXIT_BUTTON, g_instance, NULL);
+    g_minimizeButton = CreateWindowExW(0, L"BUTTON", L"Minimize to tray", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 0, 0, 0, hwnd, (HMENU)ID_MINIMIZE_BUTTON, g_instance, NULL);
+    g_exitButton = CreateWindowExW(0, L"BUTTON", L"Exit", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW, 0, 0, 0, 0, hwnd, (HMENU)ID_EXIT_BUTTON, g_instance, NULL);
 
-    g_noteLabel = CreateWindowExW(0, L"STATIC", L"Nota: si una directiva de empresa fuerza el bloqueo por inactividad, esta aplicacion no la modifica ni la elude.", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_NOTE_LABEL, g_instance, NULL);
+    g_noteLabel = CreateWindowExW(0, L"STATIC", L"Note: if a company policy enforces idle locking, this application does not modify or bypass it.", WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, (HMENU)ID_NOTE_LABEL, g_instance, NULL);
 
     SendMessageW(g_detailLabel, WM_SETFONT, (WPARAM)g_bodyFont, TRUE);
     for (i = 0; i < 5; i++) {
@@ -769,10 +769,10 @@ static LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, 
         LayoutControls(hwnd);
 
         g_trayMenu = CreatePopupMenu();
-        AppendMenuW(g_trayMenu, MF_STRING, ID_TRAY_OPEN, L"Abrir");
-        AppendMenuW(g_trayMenu, MF_STRING, ID_TRAY_TOGGLE, g_settings.enabled ? L"Deshabilitar" : L"Habilitar");
+        AppendMenuW(g_trayMenu, MF_STRING, ID_TRAY_OPEN, L"Open");
+        AppendMenuW(g_trayMenu, MF_STRING, ID_TRAY_TOGGLE, g_settings.enabled ? L"Disable" : L"Enable");
         AppendMenuW(g_trayMenu, MF_SEPARATOR, 0, NULL);
-        AppendMenuW(g_trayMenu, MF_STRING, ID_TRAY_EXIT, L"Salir");
+        AppendMenuW(g_trayMenu, MF_STRING, ID_TRAY_EXIT, L"Exit");
 
         ZeroMemory(&g_trayIconData, sizeof(g_trayIconData));
         g_trayIconData.cbSize = sizeof(g_trayIconData);
@@ -912,7 +912,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR command
     }
 
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        MessageBoxW(NULL, L"BluePulse ya esta en ejecucion.", APP_NAME, MB_OK | MB_ICONINFORMATION);
+        MessageBoxW(NULL, L"BluePulse is already running.", APP_NAME, MB_OK | MB_ICONINFORMATION);
         CleanupApplicationState();
         return 0;
     }

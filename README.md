@@ -1,58 +1,64 @@
-﻿# BluePulse
+# BluePulse
 
-BluePulse es una aplicacion para Windows que ayuda a mantener la sesion activa y evitar que la pantalla entre en reposo por inactividad.
+[Download BluePulse.exe from the latest release](https://github.com/pedromartinezweb/BluePulse/releases/latest/download/BluePulse.exe)
 
-## Para que sirve
+BluePulse is a Windows application that helps keep the current session active and prevents the screen from going idle because of inactivity.
 
-BluePulse esta pensada para mantener el equipo activo durante periodos de inactividad sin necesidad de permisos de administrador.
+## What it does
 
-## Compilacion
+BluePulse is designed to keep a Windows PC active during idle periods without administrator permissions.
 
-Requisitos:
+It does not simulate user input, bypass corporate lock policies, install services, change system policies, or run hidden background behavior. It uses standard Windows power availability APIs from a small native executable.
+
+## Build
+
+Requirements:
 
 - Windows x64.
-- `gcc` y `windres` disponibles en `PATH`, o un ZIP de WinLibs/MinGW dentro de `tools/`.
+- `gcc` and `windres` available in `PATH`, or a WinLibs/MinGW ZIP inside `tools/`.
 
-Compilar desde PowerShell:
+Build from PowerShell:
 
 ```powershell
 .\build.ps1
 ```
 
-El ejecutable generado queda en `dist\BluePulse.exe`.
+The generated executable is written to `dist\BluePulse.exe`.
 
-## Firma de Windows
+## Windows signing
 
-El ejecutable incluye metadatos de producto en `assets\windows\BluePulse.rc`.
+The executable includes product metadata in `assets\windows\BluePulse.rc`.
 
-Para firmar el binario en GitHub Actions necesitas un certificado Authenticode en formato `.pfx` y estos secretos del repositorio:
+GitHub Actions builds the Windows executable on `windows-latest`. Releases from `main` require a valid Authenticode certificate and fail if signing is not configured. This avoids publishing unsigned release binaries.
 
-- `WINDOWS_SIGNING_CERTIFICATE_BASE64`: contenido del `.pfx` codificado en Base64.
-- `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`: contrasena del certificado.
+Add these repository secrets before publishing a release:
 
-En Windows puedes generar el valor Base64 asi:
+- `WINDOWS_SIGNING_CERTIFICATE_BASE64`: Base64-encoded `.pfx` certificate contents.
+- `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`: certificate password.
+
+Generate the Base64 value on Windows:
 
 ```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes('certificado.pfx')) | Set-Clipboard
+[Convert]::ToBase64String([IO.File]::ReadAllBytes('certificate.pfx')) | Set-Clipboard
 ```
 
-El workflow firma `dist\BluePulse.exe` antes de publicar la release cuando esos secretos existen.
+A real code-signing certificate is required to improve trust with Windows SmartScreen and antivirus vendors. Metadata alone is not a digital signature, and a self-signed certificate does not establish publisher reputation for public downloads.
 
-## Limpieza
+## Clean
 
-Para borrar artefactos generados por la compilacion:
+Remove generated build artifacts:
 
 ```powershell
 .\build.ps1 -Clean
 ```
 
-Para una limpieza mas completa:
+Run a deeper cleanup:
 
 ```powershell
 .\build.ps1 -Clean -Deep
 ```
 
-## Licencia
+## License
 
-BluePulse se distribuye bajo una licencia gratuita de uso empresarial interno.
-Consulta `LICENSE` para el texto completo.
+BluePulse is distributed under a free internal business use license.
+See `LICENSE` for the full text.
