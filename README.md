@@ -2,7 +2,7 @@
 
 **Keep your Windows PC awake without admin permissions.**
 
-[Download from releases](https://github.com/pedromartinezweb/BluePulse/releases) · [User guide](docs/USER_GUIDE.md) · [Source code](src/BluePulse/BluePulse.c) · [MIT License](LICENSE)
+[Download from releases](https://github.com/pedromartinezweb/BluePulse/releases) · [User guide](docs/USER_GUIDE.md) · [Privacy](PRIVACY.md) · [Source code](src/BluePulse/BluePulse.c) · [MIT License](LICENSE)
 
 BluePulse is a small native Windows utility that helps keep the current session active and prevents the screen from going idle during inactivity.
 
@@ -40,6 +40,10 @@ The GitHub Actions workflow builds the executable on a GitHub-hosted Windows run
 Until SignPath approval is complete, releases are published as unsigned builds.
 
 Setup details are documented in [docs/SIGNPATH.md](docs/SIGNPATH.md).
+
+## Microsoft Store
+
+Microsoft Store listing content and submission notes are prepared in [docs/MICROSOFT_STORE.md](docs/MICROSOFT_STORE.md).
 
 ## Build from source
 

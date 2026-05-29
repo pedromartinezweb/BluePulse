@@ -37,4 +37,5 @@ Desktop.ini
 
 # Temporary inspection assets
 *.png
+!/assets/store/*.png
 *.bmp
