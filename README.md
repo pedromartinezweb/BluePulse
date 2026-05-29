@@ -4,6 +4,8 @@
 
 BluePulse is a Windows application that helps keep the current session active and prevents the screen from going idle because of inactivity.
 
+BluePulse uses the SignPath Foundation for code signing of public release builds.
+
 ## What it does
 
 BluePulse is designed to keep a Windows PC active during idle periods without administrator permissions.
