@@ -41,6 +41,6 @@ The workflow does the following:
 3. Submits that artifact to SignPath.
 4. Waits for the signed executable.
 5. Verifies the Authenticode signature with `signtool`.
-6. Publishes the signed executable to GitHub Releases.
+6. Publishes the executable to GitHub Releases.
 
-If SignPath is not configured, the workflow stops after uploading the unsigned workflow artifact and does not publish a GitHub Release.
+If SignPath is not configured, the workflow skips signing and publishes an unsigned release build.

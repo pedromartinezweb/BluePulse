@@ -10,7 +10,7 @@ It is built for a narrow purpose: keep the display awake while you are working a
 
 ## Quick start
 
-1. Download `BluePulse.exe` from the latest signed release.
+1. Download `BluePulse.exe` from the latest release.
 2. Run the executable.
 3. Enable the utility.
 4. Choose the idle threshold in minutes.
@@ -35,9 +35,9 @@ If a company policy forces idle locking, BluePulse does not modify or disable th
 
 BluePulse uses the SignPath Foundation for code signing of public release builds.
 
-The GitHub Actions workflow builds the executable on a GitHub-hosted Windows runner, submits the build artifact to SignPath when signing is configured, verifies the Authenticode signature, and publishes only the signed executable to GitHub Releases.
+The GitHub Actions workflow builds the executable on a GitHub-hosted Windows runner, submits the build artifact to SignPath when signing is configured, verifies the Authenticode signature, and publishes the executable to GitHub Releases.
 
-Until SignPath approval is complete, the workflow does not publish new unsigned release binaries.
+Until SignPath approval is complete, releases are published as unsigned builds.
 
 Setup details are documented in [docs/SIGNPATH.md](docs/SIGNPATH.md).
 

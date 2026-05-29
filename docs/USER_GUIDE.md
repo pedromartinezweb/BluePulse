@@ -2,11 +2,11 @@
 
 ## Download
 
-Download `BluePulse.exe` from the latest signed GitHub release:
+Download `BluePulse.exe` from the latest GitHub release:
 
 https://github.com/pedromartinezweb/BluePulse/releases
 
-Until SignPath approval is complete, new unsigned releases are not published.
+Until SignPath approval is complete, release builds are published unsigned.
 
 ## Run
 
