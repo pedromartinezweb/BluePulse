@@ -60,5 +60,5 @@ Run a deeper cleanup:
 
 ## License
 
-BluePulse is distributed under a free internal business use license.
+BluePulse is open source software distributed under the MIT License.
 See `LICENSE` for the full text.
