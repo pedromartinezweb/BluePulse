@@ -1,0 +1,40 @@
+# Build outputs
+/build/
+/dist/
+*.o
+*.obj
+*.res
+*.res.o
+*.ilk
+*.pdb
+*.idb
+*.tmp
+*.log
+
+# Local binaries
+*.exe
+
+# Local toolchains and archives
+/.local/
+/mingw/
+/tools/*.zip
+/tools/*.7z
+
+# Legacy local workspace leftovers
+/BluePulseV1.exe
+/win-install-mingw.log
+
+# IDE and editor state
+.vs/
+.vscode/
+*.user
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary inspection assets
+*.png
+*.bmp
