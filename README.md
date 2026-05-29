@@ -2,7 +2,7 @@
 
 **Keep your Windows PC awake without admin permissions.**
 
-[Download from releases](https://github.com/pedromartinezweb/BluePulse/releases) · [Source code](src/BluePulse/BluePulse.c) · [MIT License](LICENSE)
+[Download from releases](https://github.com/pedromartinezweb/BluePulse/releases) · [User guide](docs/USER_GUIDE.md) · [Source code](src/BluePulse/BluePulse.c) · [MIT License](LICENSE)
 
 BluePulse is a small native Windows utility that helps keep the current session active and prevents the screen from going idle during inactivity.
 
