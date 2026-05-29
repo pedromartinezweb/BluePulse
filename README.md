@@ -21,6 +21,23 @@ Compilar desde PowerShell:
 
 El ejecutable generado queda en `dist\BluePulse.exe`.
 
+## Firma de Windows
+
+El ejecutable incluye metadatos de producto en `assets\windows\BluePulse.rc`.
+
+Para firmar el binario en GitHub Actions necesitas un certificado Authenticode en formato `.pfx` y estos secretos del repositorio:
+
+- `WINDOWS_SIGNING_CERTIFICATE_BASE64`: contenido del `.pfx` codificado en Base64.
+- `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`: contrasena del certificado.
+
+En Windows puedes generar el valor Base64 asi:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes('certificado.pfx')) | Set-Clipboard
+```
+
+El workflow firma `dist\BluePulse.exe` antes de publicar la release cuando esos secretos existen.
+
 ## Limpieza
 
 Para borrar artefactos generados por la compilacion:

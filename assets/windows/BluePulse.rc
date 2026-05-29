@@ -1,3 +1,33 @@
 #define IDI_APP_ICON 101
 
 IDI_APP_ICON ICON "BluePulse.ico"
+
+1 VERSIONINFO
+FILEVERSION 0,0,1,0
+PRODUCTVERSION 0,0,1,0
+FILEFLAGSMASK 0x3fL
+FILEFLAGS 0x0L
+FILEOS 0x40004L
+FILETYPE 0x1L
+FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "pedromartinezweb.com\0"
+            VALUE "FileDescription", "keep Alive Windows PC\0"
+            VALUE "FileVersion", "V0.0.1\0"
+            VALUE "InternalName", "BluePulse\0"
+            VALUE "LegalCopyright", "Copyright (c) 2026 pedromartinezweb.com\0"
+            VALUE "OriginalFilename", "BluePulse.exe\0"
+            VALUE "ProductName", "BluePulse\0"
+            VALUE "ProductVersion", "V0.0.1\0"
+            VALUE "Version", "V0.0.1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
